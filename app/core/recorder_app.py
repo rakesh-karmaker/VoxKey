@@ -7,7 +7,7 @@ import numpy as np
 import pyperclip
 import sounddevice as sd
 
-from app.config import CHANNELS, HOTKEY, SAMPLE_RATE
+from app.config import CHANNELS, HOTKEY, QUIT_HOTKEY, SAMPLE_RATE
 from app.services.audio import compute_audio_level
 from app.services.transcription import transcribe_audio
 from app.ui.overlay import RecordingOverlay
@@ -26,6 +26,7 @@ class RecorderApp:
         self.stream = None
 
         keyboard.add_hotkey(HOTKEY, lambda: self.command_queue.put("toggle"))
+        keyboard.add_hotkey(QUIT_HOTKEY, lambda: self.command_queue.put("quit"))
 
         self.root.protocol("WM_DELETE_WINDOW", self.cleanup)
         self.root.after(50, self.poll_commands)
@@ -39,6 +40,9 @@ class RecorderApp:
 
             if command == "toggle":
                 self.toggle_recording()
+            elif command == "quit":
+                self.cleanup()
+                return
             elif command == "finished":
                 self.overlay.animate_processing()
                 threading.Thread(target=self.process_recording, daemon=True).start()
