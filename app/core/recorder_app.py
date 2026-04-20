@@ -9,12 +9,12 @@ import sounddevice as sd
 
 from app.config import CHANNELS, HOTKEY, QUIT_HOTKEY, SAMPLE_RATE
 from app.services.audio import compute_audio_level
-from app.services.transcription import transcribe_audio
 from app.ui.overlay import RecordingOverlay
 
 
 class RecorderApp:
-    def __init__(self) -> None:
+    def __init__(self, transcriber) -> None:
+        self.transcriber = transcriber
         self.root = tk.Tk()
         self.root.withdraw()
         self.overlay = RecordingOverlay(self.root)
@@ -104,8 +104,10 @@ class RecorderApp:
             if not self.audio_buffer:
                 return
 
-            audio_data = np.concatenate(self.audio_buffer, axis=0).squeeze().astype(np.float32)
-            transcription = transcribe_audio(audio_data)
+            audio_data = (
+                np.concatenate(self.audio_buffer, axis=0).squeeze().astype(np.float32)
+            )
+            transcription = self.transcriber.transcribe(audio_data)
             if transcription:
                 pyperclip.copy(transcription.strip())
                 keyboard.press_and_release("ctrl+v")

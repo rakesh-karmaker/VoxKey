@@ -1,11 +1,12 @@
+import math
 import tkinter as tk
 
 
 class RecordingOverlay:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
-        self.width = 140
-        self.height = 76
+        self.width = 120
+        self.height = 60
         self.base_bars = [1, 1, 1, 1, 1, 1, 1, 1, 1]
         self.is_animating = False
         self.is_processing = False
@@ -13,6 +14,7 @@ class RecordingOverlay:
         self.processing_job = None
         self.processing_angle = 0
         self.audio_level = 0.0
+        self.animation_phase = 0.0
         self.transparent_color = "#ff00ff"
         self.window = tk.Toplevel(root)
         self.window.overrideredirect(True)
@@ -41,14 +43,14 @@ class RecordingOverlay:
             8,
             self.width - 8,
             self.height - 8,
-            52,
+            41,
             fill="#161616",
             outline="#4a4a4a",
         )
 
         center_x = self.width // 2
-        bar_width = 5
-        spacing = 8
+        bar_width = 3
+        spacing = 6
         bars = bars if bars is not None else self.base_bars
         start_x = center_x - ((len(bars) - 1) * spacing) / 2
         base_y = self.height / 2
@@ -60,7 +62,7 @@ class RecordingOverlay:
                 base_y - bar_height / 2,
                 x,
                 base_y + bar_height / 2,
-                fill="#f5f5f5",
+                fill="#dfdfdf" if bar_height > 1 else "#868686",
                 width=bar_width,
                 capstyle="round",
             )
@@ -69,19 +71,21 @@ class RecordingOverlay:
         if not self.is_animating:
             return
 
+        self.animation_phase += 0.38
         center_index = (len(self.base_bars) - 1) / 2
         animated_bars = []
 
         for index, base_height in enumerate(self.base_bars):
-            if index in (0, len(self.base_bars) - 1):
-                animated_bars.append(base_height)
-                continue
-
             distance_from_center = abs(index - center_index)
-            center_influence = max(0.0, 1.0 - (distance_from_center / 4.0))
-            input_boost = self.audio_level * 22 * center_influence
-            height = base_height + input_boost
-            animated_bars.append(int(max(1, min(35, height))))
+            center_influence = max(0.0, 1.0 - (distance_from_center / 5.0))
+            edge_influence = max(0.18, 1.0 - (distance_from_center / 6.0))
+            wave = (
+                math.sin(self.animation_phase - (distance_from_center * 0.95)) + 1.0
+            ) / 2.0
+            idle_pulse = wave * 2.2 * edge_influence
+            input_boost = self.audio_level * 24 * center_influence
+            height = base_height + idle_pulse + input_boost
+            animated_bars.append(int(max(1, min(20, height))))
 
         self._draw(animated_bars)
         self.animation_job = self.root.after(60, self._update_bars)
@@ -93,23 +97,23 @@ class RecordingOverlay:
             8,
             self.width - 8,
             self.height - 8,
-            52,
+            41,
             fill="#161616",
             outline="#4a4a4a",
         )
         self.canvas.create_oval(
-            self.width / 2 - 10,
-            self.height / 2 - 10,
-            self.width / 2 + 10,
-            self.height / 2 + 10,
+            self.width / 2 - 8,
+            self.height / 2 - 8,
+            self.width / 2 + 8,
+            self.height / 2 + 8,
             outline="#3a3a3a",
             width=3,
         )
         self.canvas.create_arc(
-            self.width / 2 - 10,
-            self.height / 2 - 10,
-            self.width / 2 + 10,
-            self.height / 2 + 10,
+            self.width / 2 - 8,
+            self.height / 2 - 8,
+            self.width / 2 + 8,
+            self.height / 2 + 8,
             start=self.processing_angle,
             extent=110,
             style="arc",
