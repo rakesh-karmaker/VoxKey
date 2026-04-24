@@ -124,6 +124,29 @@ If `requirements.txt` exists:
 pip install -r requirements.txt
 ```
 
+### 6. Add local TTS model files (not committed)
+
+VoxKey keeps TTS model binaries out of git because they are large.
+
+If you use Piper to download the voice, run the command from inside `tts-model/`.
+Piper installs files in the current working directory.
+
+```powershell
+mkdir tts-model
+cd tts-model
+python -m piper.download_voices en_US-libritts_r-medium.onnx
+```
+
+Place your local model files in `tts-model/` (or `tts-data/`) at the project root, for example:
+
+```text
+tts-model/
+├─ en_US-libritts_r-medium.onnx
+└─ en_US-libritts_r-medium.onnx.json
+```
+
+These files are ignored by `.gitignore` and should not be pushed to GitHub.
+
 ## Run
 
 ```powershell
