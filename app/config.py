@@ -23,5 +23,5 @@ TTS_CONFIGURATION = SynthesisConfig(
 )
 
 # Hotkeys
-HOTKEY = "pause"
+HOTKEY = "right shift"
 QUIT_HOTKEY = "ctrl+alt+q"

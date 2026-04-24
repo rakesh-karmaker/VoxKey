@@ -134,3 +134,6 @@ dmypy.json
 tts-model/
 tts-data/
 *.onnx
+
+# Local virtual environment
+voxenv/
